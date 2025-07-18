@@ -13,7 +13,8 @@ conv_base=ResNet50(
 )
 # Load both datasets
 ds1 = tf.keras.utils.image_dataset_from_directory(
-    "test/",
+
+      directory='train/',
     labels='inferred',
     label_mode='int',
     batch_size=32,
@@ -46,15 +47,15 @@ data_augmentation = keras.Sequential([
 conv_base.trainable=True
 set_trainable=False
 for layer in conv_base.layers:
-    if layer.name=='conv5_block1_out':
+    if layer.name=='conv4_block1_out':
         set_trainable=True
     if set_trainable:
         layer.trainable=True
     else:
         layer.trainable=False
 
-train_ds=keras.utils.image_dataset_from_directory(
-    directory='train/',
+test_ds=keras.utils.image_dataset_from_directory(
+      "test/",
     labels='inferred',
     label_mode='int',
     batch_size=32,
@@ -68,9 +69,9 @@ def process(image,label):
 
 AUTOTUNE = tf.data.AUTOTUNE
 
-train_ds = train_ds.map(process).map(lambda x, y: (data_augmentation(x, training=True), y))
-train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
-combined_ds = combined_ds.map(process).cache().prefetch(buffer_size=AUTOTUNE)
+combined_ds = combined_ds.map(process).map(lambda x, y: (data_augmentation(x, training=True), y))
+combined_ds= combined_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
+test_ds= test_ds.map(process).cache().prefetch(buffer_size=AUTOTUNE)
 
 model.compile(
     optimizer='adam',
@@ -81,4 +82,5 @@ from keras.callbacks import ModelCheckpoint
 
 checkpoint = ModelCheckpoint("best_model.h5", monitor='val_accuracy', save_best_only=True)
 
-model.fit(train_ds,epochs=30,validation_data=combined_ds)
+model.fit(combined_ds, epochs=30, validation_data=test_ds, callbacks=[checkpoint])
+
