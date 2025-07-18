@@ -3,6 +3,8 @@ from tensorflow import keras
 from keras import Sequential
 from keras.applications import ResNet50
 from keras.layers import Flatten,Dense
+from keras.layers import GlobalAveragePooling2D, Dropout
+
 
 
 
@@ -32,11 +34,15 @@ ds2 = tf.keras.utils.image_dataset_from_directory(
 # Combine them
 combined_ds = ds1.concatenate(ds2)
 
-model=Sequential()
+from keras.layers import GlobalAveragePooling2D
+
+model = Sequential()
 model.add(conv_base)
-model.add(Flatten())
-model.add(Dense(256,activation='relu'))
-model.add(Dense(25,activation='softmax'))  #output layer
+model.add(GlobalAveragePooling2D())
+model.add(Dense(256, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(25, activation='softmax'))
+  #output layer
 
 data_augmentation = keras.Sequential([
     keras.layers.RandomFlip("horizontal"),
