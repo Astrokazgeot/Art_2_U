@@ -4,6 +4,7 @@ from keras import Sequential
 from keras.applications import ResNet50
 from keras.layers import Flatten,Dense
 from keras.layers import GlobalAveragePooling2D, Dropout
+from keras.applications.resnet50 import preprocess_input
 
 
 
@@ -14,7 +15,7 @@ conv_base=ResNet50(
     input_shape=(224,224,3) # standard for resnet 
 )
 # Load both datasets
-ds1 = tf.keras.utils.image_dataset_from_directory(
+train_ds = tf.keras.utils.image_dataset_from_directory(
 
       directory='train/',
     labels='inferred',
@@ -23,7 +24,7 @@ ds1 = tf.keras.utils.image_dataset_from_directory(
     image_size=(224,224)
 )
 
-ds2 = tf.keras.utils.image_dataset_from_directory(
+val_ds = tf.keras.utils.image_dataset_from_directory(
     "valid/",
     labels='inferred',
     label_mode='int',
@@ -31,8 +32,6 @@ ds2 = tf.keras.utils.image_dataset_from_directory(
     image_size=(224,224)
 )
 
-# Combine them
-combined_ds = ds1.concatenate(ds2)
 
 from keras.layers import GlobalAveragePooling2D
 
@@ -68,16 +67,17 @@ test_ds=keras.utils.image_dataset_from_directory(
     image_size=(224,224)
 )
 
-def process(image,label):
-    image=tf.cast(image/255.0,tf.float32)
-    return image,label
+
+
+def process(image, label):
+    return preprocess_input(image), label
 
 
 AUTOTUNE = tf.data.AUTOTUNE
 
-combined_ds = combined_ds.map(process).map(lambda x, y: (data_augmentation(x, training=True), y))
-combined_ds= combined_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
-test_ds= test_ds.map(process).cache().prefetch(buffer_size=AUTOTUNE)
+train_ds = train_ds.map(process).map(lambda x, y: (data_augmentation(x, training=True), y))
+train_ds=train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
+val_ds= val_ds.map(process).cache().prefetch(buffer_size=AUTOTUNE)
 
 model.compile(
     optimizer='adam',
@@ -88,5 +88,5 @@ from keras.callbacks import ModelCheckpoint
 
 checkpoint = ModelCheckpoint("best_model.h5", monitor='val_accuracy', save_best_only=True)
 
-model.fit(combined_ds, epochs=30, validation_data=test_ds, callbacks=[checkpoint])
+model.fit(train_ds, epochs=30, validation_data=val_ds, callbacks=[checkpoint])
 
