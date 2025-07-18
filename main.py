@@ -2,91 +2,94 @@ import tensorflow as tf
 from tensorflow import keras
 from keras import Sequential
 from keras.applications import ResNet50
-from keras.layers import Flatten,Dense
-from keras.layers import GlobalAveragePooling2D, Dropout
+from keras.layers import Flatten, Dense, GlobalAveragePooling2D, Dropout
 from keras.applications.resnet50 import preprocess_input
+from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 
-
-
-
-conv_base=ResNet50(
-    weights='imagenet',# keep weights as it was trained on original imagenet dataset
-    include_top=False, # means remove top dense layer
-    input_shape=(224,224,3) # standard for resnet 
+# Load ResNet base
+conv_base = ResNet50(
+    weights='imagenet',
+    include_top=False,
+    input_shape=(224, 224, 3)
 )
-# Load both datasets
-train_ds = tf.keras.utils.image_dataset_from_directory(
 
-      directory='train/',
+# Load datasets
+train_ds = tf.keras.utils.image_dataset_from_directory(
+    'train/',
     labels='inferred',
     label_mode='int',
     batch_size=32,
-    image_size=(224,224)
+    image_size=(224, 224)
 )
 
 val_ds = tf.keras.utils.image_dataset_from_directory(
-    "valid/",
+    'valid/',
     labels='inferred',
     label_mode='int',
     batch_size=32,
-    image_size=(224,224)
+    image_size=(224, 224)
 )
 
+test_ds = tf.keras.utils.image_dataset_from_directory(
+    'test/',
+    labels='inferred',
+    label_mode='int',
+    batch_size=32,
+    image_size=(224, 224)
+)
 
-from keras.layers import GlobalAveragePooling2D
+# Model architecture
+model = Sequential([
+    conv_base,
+    GlobalAveragePooling2D(),
+    Dense(256, activation='relu'),
+    Dropout(0.6),  # More dropout to fight overfitting
+    Dense(21, activation='softmax')
+])
 
-model = Sequential()
-model.add(conv_base)
-model.add(GlobalAveragePooling2D())
-model.add(Dense(256, activation='relu'))
-model.add(Dropout(0.5))
-model.add(Dense(21, activation='softmax'))
-  #output layer
-
+# Data augmentation
 data_augmentation = keras.Sequential([
     keras.layers.RandomFlip("horizontal"),
     keras.layers.RandomRotation(0.1),
     keras.layers.RandomZoom(0.1),
 ])
 
-conv_base.trainable=True
-set_trainable=False
+# Set trainable layers (fine-tune from conv5_block1_out)
+conv_base.trainable = True
+set_trainable = False
 for layer in conv_base.layers:
-    if layer.name=='conv5_block1_out':
-        set_trainable=True
-    if set_trainable:
-        layer.trainable=True
-    else:
-        layer.trainable=False
+    if layer.name == 'conv5_block1_out':
+        set_trainable = True
+    layer.trainable = set_trainable
 
-test_ds=keras.utils.image_dataset_from_directory(
-      "test/",
-    labels='inferred',
-    label_mode='int',
-    batch_size=32,
-    image_size=(224,224)
-)
-
-
-
+# Preprocess and prepare data
 def process(image, label):
     return preprocess_input(image), label
-
 
 AUTOTUNE = tf.data.AUTOTUNE
 
 train_ds = train_ds.map(process).map(lambda x, y: (data_augmentation(x, training=True), y))
-train_ds=train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
-val_ds= val_ds.map(process).cache().prefetch(buffer_size=AUTOTUNE)
+train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
 
+val_ds = val_ds.map(process).cache().prefetch(buffer_size=AUTOTUNE)
+test_ds = test_ds.map(process).cache().prefetch(buffer_size=AUTOTUNE)
+
+# Compile model
 model.compile(
     optimizer='adam',
     loss='sparse_categorical_crossentropy',
     metrics=['accuracy']
 )
-from keras.callbacks import ModelCheckpoint
 
+# Callbacks
 checkpoint = ModelCheckpoint("best_model.h5", monitor='val_accuracy', save_best_only=True)
+early_stop = EarlyStopping(monitor='val_accuracy', patience=3, restore_best_weights=True, verbose=1)
+lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1)
 
-model.fit(train_ds, epochs=30, validation_data=val_ds, callbacks=[checkpoint])
-
+# Train
+model.fit(
+    train_ds,
+    epochs=30,
+    validation_data=val_ds,
+    callbacks=[checkpoint, early_stop, lr_scheduler]
+)
