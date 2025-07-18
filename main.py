@@ -41,7 +41,7 @@ model.add(conv_base)
 model.add(GlobalAveragePooling2D())
 model.add(Dense(256, activation='relu'))
 model.add(Dropout(0.5))
-model.add(Dense(25, activation='softmax'))
+model.add(Dense(21, activation='softmax'))
   #output layer
 
 data_augmentation = keras.Sequential([
