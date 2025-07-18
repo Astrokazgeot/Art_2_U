@@ -52,7 +52,7 @@ data_augmentation = keras.Sequential([
 conv_base.trainable=True
 set_trainable=False
 for layer in conv_base.layers:
-    if layer.name=='conv4_block1_out':
+    if layer.name=='conv5_block1_out':
         set_trainable=True
     if set_trainable:
         layer.trainable=True
