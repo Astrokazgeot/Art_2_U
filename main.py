@@ -93,3 +93,4 @@ model.fit(
     validation_data=val_ds,
     callbacks=[checkpoint, early_stop, lr_scheduler]
 )
+model.save("final_model.h5")
