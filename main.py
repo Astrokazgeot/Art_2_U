@@ -100,4 +100,6 @@ model.fit(
     validation_data=val_ds,
     callbacks=[checkpoint, early_stop, lr_scheduler]
 )
-model.save("final_model.h5")
+# Manually save the model at the end
+model.save("C:/Users/cclchd-karman/Desktop/resnetprac/best_model_manual.h5")
+print("✅ Model manually saved at: C:/Users/cclchd-karman/Desktop/resnetprac/best_model_manual.h5")
