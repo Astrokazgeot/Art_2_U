@@ -82,14 +82,21 @@ model.compile(
 )
 
 # Callbacks
-checkpoint = ModelCheckpoint("best_model.h5", monitor='val_accuracy', save_best_only=True)
+checkpoint = tf.keras.callbacks.ModelCheckpoint(
+    filepath="C:/Users/cclchd-karman/Desktop/resnetprac/best_model.h5",
+    monitor='val_accuracy',
+    save_best_only=True,
+    save_weights_only=False,
+    verbose=1
+)
+
 early_stop = EarlyStopping(monitor='val_accuracy', patience=3, restore_best_weights=True, verbose=1)
 lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=1)
 
 # Train
 model.fit(
     train_ds,
-    epochs=30,
+    epochs=10,
     validation_data=val_ds,
     callbacks=[checkpoint, early_stop, lr_scheduler]
 )
