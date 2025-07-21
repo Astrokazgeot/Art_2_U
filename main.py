@@ -40,11 +40,12 @@ test_ds = tf.keras.utils.image_dataset_from_directory(
 )
 
 
-# Data augmentation
-data_augmentation = keras.Sequential([
-    keras.layers.RandomFlip("horizontal"),
-    keras.layers.RandomRotation(0.1),
-    keras.layers.RandomZoom(0.1),
+data_augmentation = tf.keras.Sequential([
+    tf.keras.layers.RandomFlip("horizontal_and_vertical"),
+    tf.keras.layers.RandomRotation(0.25),
+    tf.keras.layers.RandomZoom(0.3),
+    tf.keras.layers.RandomContrast(0.4),
+    tf.keras.layers.RandomTranslation(0.15, 0.15),
 ])
 
 # Apply augmentation BEFORE preprocess_input
@@ -63,7 +64,7 @@ test_ds = test_ds.map(lambda x, y: (preprocess_input(x), y)).cache().prefetch(bu
 conv_base.trainable = True
 set_trainable = False
 for layer in conv_base.layers:
-    if layer.name == 'conv4_block1_out':
+    if layer.name == 'conv5_block1_out':
         set_trainable = True
     layer.trainable = set_trainable
 
