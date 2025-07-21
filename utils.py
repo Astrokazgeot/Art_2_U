@@ -12,7 +12,7 @@ def count_images_per_class(test_dir):
             ])
             class_counts[class_name] = image_count
 
-    print("🧾 Image count per class in 'test/':\n")
+    print("🧾 Image count per class in 'train/':\n")
     for class_name, count in class_counts.items():
         print(f"{class_name:25} → {count} images")
 
