@@ -43,7 +43,8 @@ test_ds = tf.keras.utils.image_dataset_from_directory(
 for images, labels in train_ds.take(1):
     print("Image batch shape:", images.shape)
     print("Any NaNs in images?", tf.math.reduce_any(tf.math.is_nan(images)).numpy())
-    print("Any NaNs in labels?", tf.math.reduce_any(tf.math.is_nan(labels)).numpy())
+    print("Any NaNs in labels?", tf.math.reduce_any(tf.math.is_nan(tf.cast(labels, tf.float32))).numpy())
+
 
 # Data augmentation
 data_augmentation = keras.Sequential([
