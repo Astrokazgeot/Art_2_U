@@ -12,13 +12,13 @@ def count_images_per_class(test_dir):
             ])
             class_counts[class_name] = image_count
 
-    print("🧾 Image count per class in 'train/':\n")
+    print("🧾 Image count per class in 'training_set/':\n")
     for class_name, count in class_counts.items():
         print(f"{class_name:25} → {count} images")
 
     print(f"\n✅ Total images in test set: {sum(class_counts.values())}")
 
 # 👉 Replace this path with your actual test folder path
-test_folder_path = "train/"
+test_folder_path = "training_set/"
 
 count_images_per_class(test_folder_path)
