@@ -16,7 +16,7 @@ conv_base = ResNet50(
 
 # Load datasets
 train_ds = tf.keras.utils.image_dataset_from_directory(
-    'train/',
+    'training_set/',
     labels='inferred',
     label_mode='int',
     batch_size=32,
@@ -24,20 +24,14 @@ train_ds = tf.keras.utils.image_dataset_from_directory(
 )
 
 val_ds = tf.keras.utils.image_dataset_from_directory(
-    'valid/',
+    'validation_set/',
     labels='inferred',
     label_mode='int',
     batch_size=32,
     image_size=(224, 224)
 )
 
-test_ds = tf.keras.utils.image_dataset_from_directory(
-    'test/',
-    labels='inferred',
-    label_mode='int',
-    batch_size=32,
-    image_size=(224, 224)
-)
+
 
 
 data_augmentation = tf.keras.Sequential([
@@ -74,7 +68,7 @@ model = Sequential([
     GlobalAveragePooling2D(),
     Dense(256, activation='relu'),
     Dropout(0.6),
-    Dense(22, activation='softmax')  # 21 classes
+    Dense(5, activation='softmax')  # 21 classes
 ])
 
 # Use a safer learning rate with gradient clipping
