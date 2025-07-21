@@ -63,7 +63,7 @@ test_ds = test_ds.map(lambda x, y: (preprocess_input(x), y)).cache().prefetch(bu
 conv_base.trainable = True
 set_trainable = False
 for layer in conv_base.layers:
-    if layer.name == 'conv5_block1_out':
+    if layer.name == 'conv4_block1_out':
         set_trainable = True
     layer.trainable = set_trainable
 
