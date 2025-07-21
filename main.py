@@ -22,24 +22,6 @@ val_ds = tf.keras.utils.image_dataset_from_directory(
     batch_size=32,
     image_size=(224, 224)
 )
-from sklearn.utils.class_weight import compute_class_weight
-import numpy as np
-
-# Get all labels from the training set
-labels = []
-for _, label_batch in train_ds.unbatch():
-    labels.append(int(label_batch))
-
-# Calculate class weights
-class_weights = compute_class_weight(
-    class_weight='balanced',
-    classes=np.unique(labels),
-    y=labels
-)
-class_weights_dict = dict(enumerate(class_weights))
-
-print("✅ Class weights computed:", class_weights_dict)
-
 
 
 # Get number of classes dynamically
@@ -80,7 +62,7 @@ conv_base = ResNet50(
 conv_base.trainable = True
 set_trainable = False
 for layer in conv_base.layers:
-    if layer.name == 'conv5_block1_out':
+    if layer.name == 'conv4_block1_out':
         set_trainable = True
     layer.trainable = set_trainable
 
@@ -118,9 +100,9 @@ model.summary()
 history = model.fit(
     train_ds,
     validation_data=val_ds,
-    epochs=10,
+    epochs=30,
     callbacks=[checkpoint, early_stop, lr_scheduler],
-    class_weight=class_weights_dict
+  
 )
 
 # Save final model manually
