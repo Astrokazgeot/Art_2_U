@@ -52,7 +52,7 @@ def process(image, label):
 AUTOTUNE = tf.data.AUTOTUNE
 train_ds = train_ds.map(process).cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
 val_ds = val_ds.map(lambda x, y: (preprocess_input(x), y)).cache().prefetch(buffer_size=AUTOTUNE)
-test_ds = test_ds.map(lambda x, y: (preprocess_input(x), y)).cache().prefetch(buffer_size=AUTOTUNE)
+
 
 # Freeze all layers initially, then unfreeze from conv5_block1_out
 conv_base.trainable = True
