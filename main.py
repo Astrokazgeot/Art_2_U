@@ -74,7 +74,7 @@ model = Sequential([
     GlobalAveragePooling2D(),
     Dense(256, activation='relu'),
     Dropout(0.6),
-    Dense(25, activation='softmax')  # 21 classes
+    Dense(22, activation='softmax')  # 21 classes
 ])
 
 # Use a safer learning rate with gradient clipping
